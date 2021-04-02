@@ -36,9 +36,10 @@
     {#each row as square, j}
       <Square
         content="{square}"
-        <!-- pass in $board to trigger Svelte to re-render -->
         winning="{isWinningSquare({x: j, y: i}, $board)}"
         on:click="{(e) => handleSquareClick(e, i, j)}" />
     {/each}
   {/each}
 </div>
+
+<!-- pass in $board to trigger Svelte to re-render -->

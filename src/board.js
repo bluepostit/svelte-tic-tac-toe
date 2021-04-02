@@ -1,8 +1,5 @@
 import { writable, derived } from 'svelte/store'
 
-let player = 'x'
-let canMove = true
-
 const getEmptyBoard = () => {
   return [
     ['', '', ''],
@@ -14,6 +11,8 @@ const getEmptyBoard = () => {
 function createBoard() {
   const { subscribe, set, update } = writable(getEmptyBoard())
   let empty = true
+  let player = 'x'
+  let canMove = true
 
   const checkAllSquares = (board, callback) => {
     return board.every(row => {
@@ -40,7 +39,9 @@ function createBoard() {
       player = 'x'
       set(getEmptyBoard())
     },
-    empty: () => empty,
+    isEmpty: () => empty,
+    getPlayer: () => player,
+    canMove: () => canMove
   }
 }
 
@@ -90,7 +91,7 @@ const checkDiagonals = (board) => {
   }
 }
 
-const getStatus = (board) => {
+const getStatus = (board, store) => {
   let status
   for (let i = 0; i < board.length; i++) {
     const row = board[i];
@@ -118,7 +119,7 @@ const getStatus = (board) => {
       return win({board, player: token, y: i, direction: 'horizontal'})
     }
   }
-  return { player, playing: canMove }
+  return { player: store.getPlayer(), playing: store.canMove() }
 }
 
 
@@ -126,5 +127,5 @@ const getStatus = (board) => {
 export const board = createBoard()
 export const status = derived(
   board,
-  $board => getStatus($board)
+  $board => getStatus($board, board)
 )
