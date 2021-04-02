@@ -1,5 +1,6 @@
 <script>
   export let content = ''
+  export let winning = false
 </script>
 
 <style>
@@ -35,9 +36,13 @@
     width: 100%;
   }
 
+  .square.winning {
+    color: orangered;
+  }
+
 </style>
 
-<div class="square" on:click>
+<div class="square" on:click class:winning>
   <div class="content">
     <div class="table">
       <div class="table-cell">

@@ -1,5 +1,8 @@
 import { writable, derived } from 'svelte/store'
 
+let player = 'x'
+let canMove = true
+
 const getEmptyBoard = () => {
   return [
     ['', '', ''],
@@ -8,13 +11,9 @@ const getEmptyBoard = () => {
   ]
 }
 
-let player = 'x'
-let canMove = true
-
 function createBoard() {
   const { subscribe, set, update } = writable(getEmptyBoard())
   let empty = true
-  let full = false
 
   const checkAllSquares = (board, callback) => {
     return board.every(row => {
@@ -45,15 +44,34 @@ function createBoard() {
   }
 }
 
-export const board = createBoard()
+const getWinningSquares = ({board, direction, x = 0, y = 0}) => {
+  let squares = []
+  const boardLength = board.length
+  for (let i = 0; i < boardLength; i++) {
+    if (direction === 'diagonal' && x === 0) { //backslash
+      squares.push({x: i, y: i})
+    } else if (direction === 'diagonal') { //slash
+      squares.push({x: i, y: boardLength - 1 - i})
+    } else if (direction === 'horizontal') {
+      squares.push({x: i, y})
+    } else if (direction === 'vertical') {
+      squares.push({x, y: i})
+    }
+  }
+  return squares
+}
 
-const win = ({player, x = 0, y = 0, isDiagonal = false}) => {
+const win = ({board, player, direction, x = 0, y = 0}) => {
+  const winningSquares = getWinningSquares({
+    board,
+    x,
+    y,
+    direction
+  })
   return {
     playing: false,
     winner: player,
-    x,
-    y,
-    isDiagonal
+    winningSquares
   }
 }
 
@@ -61,17 +79,16 @@ const checkDiagonals = (board) => {
   const backslash = board.map((row, idx) => row[idx])
   let token = board[0][0]
   if (token && backslash.every(square => square === token)) {
-    return win({player: token, isDiagonal: true})
+    return win({board, player: token, direction: 'diagonal'})
   }
 
   const slash = board.map((row, idx) => row[row.length - 1 - idx])
   const rowSize = board[0].length
   token = board[0][rowSize - 1]
   if (token && slash.every(square => square === token)) {
-    return win({ player: token, x: rowSize - 1, isDiagonal: true})
+    return win({board, player: token, x: rowSize - 1, direction: 'diagonal'})
   }
 }
-
 
 const getStatus = (board) => {
   let status
@@ -84,7 +101,7 @@ const getStatus = (board) => {
         token = row[j]
         const verticals = board.map(row => row[j])
         if (token && verticals.every(square => square === token)) {
-          return win({player: token, x: j})
+          return win({board, player: token, x: j, direction: 'vertical'})
         }
       }
 
@@ -98,12 +115,15 @@ const getStatus = (board) => {
     // horizontals
     token = board[i][0]
     if (token && row.every(square => square === token)) {
-      return win({player: token, y: i})
+      return win({board, player: token, y: i, direction: 'horizontal'})
     }
   }
   return { player, playing: canMove }
 }
 
+
+
+export const board = createBoard()
 export const status = derived(
   board,
   $board => getStatus($board)
