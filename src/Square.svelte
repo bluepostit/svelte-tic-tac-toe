@@ -4,6 +4,7 @@
 </script>
 
 <style>
+  /* From: https://stackoverflow.com/questions/20456694/grid-of-responsive-squares */
   .square {
     float: left;
     position: relative;
